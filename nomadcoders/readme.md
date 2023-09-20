@@ -252,10 +252,53 @@ export default function MyApp({ Component, pageProps }) {
 
 ### #1.7 Recap
 
+정리
+- Nextjs는 틀이 정해져있는 프레임워크이다.(ex - 라우팅)
 - Nextjs에서는 하나의 react 앱이 아니라 별개의 페이지 단위로 생각해야 함.
-
+- html로 먼저 불러와져서 로드될 때 빈 화면을 보지 않아도 됌.
 - _app.js(custom app component)는 페이지 template을 만드는데 활용할 수 있다!
+- jsx, module.css, global로 css를 적용할 수 있다.
 
 <br>
 
 ---
+
+<br>
+
+## Chapter 2 - PRACTICE PROJECT
+
+### #2.0 Patterns
+
+- children : 하나의 component를 또 다른 component 안에 넣을 때 사용.
+
+nextjs-intro/src/components/Layout.js
+```js
+import NavBar from "./NavBar";
+
+export default function Layout({ children }) {
+  return (
+    <>
+      <NavBar />
+      <div>{children}</div>
+    </>
+  );
+}
+```
+
+nextjs-intro/src/pages/_app.js
+```js
+import Layout from "../components/Layout";
+import "../styles/globals.css";
+
+export default function MyApp({ Component, pageProps }) {
+  return (
+    <>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </>
+  );
+}
+```
+
+### #2.1 Fetching Data
