@@ -301,4 +301,48 @@ export default function MyApp({ Component, pageProps }) {
 }
 ```
 
+<br>
+
 ### #2.1 Fetching Data
+
+- next.js를 이용하면 public 파일들을 쉽게 다룰 수 있음.
+  - /public/vercel.svg 이미지 경로 사용 예시
+  - < img src="/vercel.svg" />
+- themoviedb.org 페이지에서 영화 관련된 무료 API 가져오기
+  - API key를 감추지 않고 사용하면 개발자 도구에서 보일 수 있는 문제점이 있음.(다음 챕터에서 감출 예정)
+  
+#### API 가져오기
+```js
+import { useEffect, useState } from "react";
+import Seo from "../components/Seo";
+
+const API_KEY = "0ea6b492115dc4e31470d1a8624bc0c6";
+
+export default function Home() {
+  const [movies, setMovies] = useState();
+  
+  useEffect(() => {
+    (async () => {
+      const { results } = await (
+        await fetch(
+          `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`
+        )
+      ).json();
+      setMovies(results);
+    })();
+  }, []);
+
+  return (
+    <div>
+      <Seo title="Home" />
+      {!movies && <h4>Loading...</h4>}
+      {movies?.map((movie) => (
+        <div key={movie.id}>
+          <h4>{movie.original_title}</h4>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
