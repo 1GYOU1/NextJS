@@ -346,3 +346,187 @@ export default function Home() {
 }
 ```
 
+<br>
+
+### #2.2 Redirect and Rewrite
+
+개발자도구 Network에서 안보이게 API 숨기기
+- 돈 내고 사야하는 경우도 있고, API key의 사용량이 제한되어있을 수 있기 떄문.
+
+<br>
+
+request에 mask를 씌우는 것 같은 효과
+- redirect
+  - 한 페이지에서 다른 페이지로 이동하게 할 수 있음.
+  - 새로운 URL 뒤에도 이것저것 그대로 붙여서 넘겨줄 수 있음.
+  - source, destination, permanent 모두 적어주기.
+- rewrite
+  - 유저를 redirect 시키지만 url은 변하지 않음.
+
+<br>
+
+nextjs-intro/next.config.js
+- 파일 수정 후 서버 재시작 필요
+>$ npm run dev
+```js
+/** @type {import('next').NextConfig} */
+
+const API_KEY = process.env.API_KEY;
+
+module.exports = {
+  reactStrictMode: true,
+  async redirects() {//다른 어딘가로 redirect
+    return [
+      {
+        source: "/old-blog/:path*",//유저가 이동할 곳
+        destination: "/new-sexy-blog/:path*",//유저를 보낸 곳, 해당 부분이 영구적(permanent)인지 아닌지에 따라서 브라우저나 검색엔진이 이 정보를 기억하는지 여부가 결정됌.
+        permanent: false,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/movies",
+        destination: `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`,
+      },
+    ];
+  },
+};
+```
+
+<br>
+
+#### redirects 사용 예시
+- 주소에 http://localhost:3000/contact 넣고 엔터 치면
+- http://localhost:3000/form 으로 이동.
+```js
+async redirects() {//다른 어딘가로 redirect
+    return [
+      {
+        source: "/contact",//유저가 이동할 곳
+        destination: "/form",//유저를 보낸 곳
+        permanent: false,//브라우저나 검색엔진이 정보를 기억해야하는지 여부
+      },
+    ];
+  },
+```
+
+- 주소에 http://localhost:3000/contact 넣고 엔터 치면
+- https://github.com/1gyou1 으로 이동.
+```js
+async redirects() {//다른 어딘가로 redirect
+    return [
+      {
+        source: "/contact",//유저가 이동할 곳
+        destination: "https://github.com/1gyou1",//유저를 보낸 곳
+        permanent: false,//브라우저나 검색엔진이 정보를 기억해야하는지 여부
+      },
+    ];
+  },
+```
+
+- 주소에 http://localhost:3000/old-blog/1212 :path 부분에 아무거나 넣고 엔터 치면
+- http://localhost:3000/new-sexy-blog/1212 으로 이동.
+```js
+async redirects() {//다른 어딘가로 redirect
+    return [
+      {
+        source: "/old-blog/:path",//유저가 이동할 곳
+        destination: "/new-sexy-blog/:path",//유저를 보낸 곳
+        permanent: false,//브라우저나 검색엔진이 정보를 기억해야하는지 여부
+      },
+    ];
+  },
+```
+
+- 주소 뒤에 별표를 붙여주면 모든 걸 catch
+- 주소에 http://localhost:3000/old-blog/1212/comments/1212 :path 부분에 아무거나 넣고 엔터 치면
+- http://localhost:3000/new-sexy-blog/1212/comments/1212 으로 이동.
+```js
+async redirects() {//다른 어딘가로 redirect
+    return [
+      {
+        source: "/old-blog/:path*",//유저가 이동할 곳
+        destination: "/new-sexy-blog/:path*",//유저를 보낸 곳
+        permanent: false,//브라우저나 검색엔진이 정보를 기억해야하는지 여부
+      },
+    ];
+  },
+```
+
+<br>
+
+#### rewrite 사용 예시
+
+- 주소에 http://localhost:3000/api/movies 로 이동하면 서버 뒤에 mask되어 가려지게 되고, API response 데이터 페이지로 이동
+- fetch 해오는 부분 주소도 까먹지 말고 같이 변경해줘야 됌.
+
+nextjs-intro/next.config.js
+```js
+const API_KEY = "0ea6b492115dc4e31470d1a8624bc0c6";
+...
+async rewrites() {
+    return [
+      {
+        source: "/api/movies",
+        destination: `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`,
+      },
+    ];
+  },
+```
+nextjs-intro/src/pages/index.js
+```js
+...
+useEffect(() => {
+  (async () => {
+    const { results } = await (await fetch(`/api/movies`)).json();
+    setMovies(results);
+  })();
+}, []);
+...
+```
+
+<br>
+
+#### .env 형식의 environment 파일 이용해서 API 정보 가리기
+
+nextjs-intro/.env
+```
+API_KEY=0ea6b492115dc4e31470d1a8624bc0c6
+```
+nextjs-intro/.gitignore
+```
+# API_KEY 숨기기 추가
+.env
+```
+nextjs-intro/next.config.js
+```js
+const API_KEY = process.env.API_KEY;
+
+module.exports = {
+  reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/old-blog/:path*",
+        destination: "/new-sexy-blog/:path*",
+        permanent: false,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/movies",
+        destination: `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`,
+      },
+    ];
+  },
+};
+```
+
+<br>
+
+### #2.3 Server Side Rendering
+
