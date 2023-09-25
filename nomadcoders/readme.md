@@ -530,3 +530,67 @@ module.exports = {
 
 ### #2.3 Server Side Rendering
 
+#### getServerSideProps
+- page에서 서버 측 랜더링 함수인 getServerSideProps함수를 export하는 경우 Next.js는 getServerSideProps에서 반환된 데이터를 사용하여 각 request에서 이 페이지를 pre-render합니다. getServerSideProps는 서버 측에서만 실행되며 브라우저에서는 실행되지 않습니다.
+
+- SSR방식은 해당 페이지의 데이터가 들어오기 전 까진 아무것도 볼 수 없다가 해당 페이지의 데이터만 들어오면 전체를 다 볼 수 있고(다른 페이지 갈 때도 이 과정이 필요)
+- CSR방식은 모든 JS파일들이 들어와야('loading...') 보여지는데 그대신 다른 페이지 갈 때는 이미 모든 JS파일을 받았으니 SSR 방식보다는 빠르게 화면을 볼 수 있다.
+- index.js -> SSR(서버 사이드 랜더링)방식
+- About-us.js -> CSR(클라이언트 사이드 랜더링)방식
+
+nextjs-intro/src/pages/index.js - SSR 방식
+```js
+import { useEffect, useState } from "react";
+import Seo from "../components/Seo";
+
+export default function Home({ results }) {
+  return (
+    <div className="container">
+      <Seo title="Home" />
+        {results?.map((movie) => (
+        <div className="movie" key={movie.id}>
+          <img src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`} />
+          <h4>{movie.original_title}</h4>
+        </div>
+      ))}
+      <style jsx>{`
+        .container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          padding: 20px;
+          gap: 20px;
+        }
+        .movie img {
+          max-width: 100%;
+          border-radius: 12px;
+          transition: transform 0.2s ease-in-out;
+          box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        }
+        .movie:hover img {
+          transform: scale(1.05) translateY(-10px);
+        }
+        .movie h4 {
+          font-size: 18px;
+          text-align: center;
+        }
+      `}</style>
+    </div>
+  );
+}
+// 매 request마다 실행
+export async function getServerSideProps() {
+    const { results } = await (
+      await fetch(`http://localhost:3000/api/movies`)
+    ).json();
+    return {// props를 통해 page에 data전달
+      props: {
+        results,
+      },
+    };
+  }
+```
+
+<br>
+
+### #2.4 Recap 
+
