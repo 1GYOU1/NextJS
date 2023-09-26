@@ -19,7 +19,7 @@ export default function Home({ results }) {
           gap: 20px;
         }
         .movie{
-          cursor:pointer;
+            cursor:pointer;
         }
         .movie img {
           max-width: 100%;

@@ -530,13 +530,23 @@ module.exports = {
 
 ### #2.3 Server Side Rendering
 
-#### getServerSideProps
+#### getServerSideProps - SSR
+
+- request time에 반드시 데이터를 fetch해와야 하는 페이지를 pre-render해야 하는 경우에만 getServerSideProps를 사용
+
 - page에서 서버 측 랜더링 함수인 getServerSideProps함수를 export하는 경우 Next.js는 getServerSideProps에서 반환된 데이터를 사용하여 각 request에서 이 페이지를 pre-render합니다. getServerSideProps는 서버 측에서만 실행되며 브라우저에서는 실행되지 않습니다.
 
+- 데이터를 pre-render할 필요가 없다면 client side에서 데이터를 가져오는 것을 고려해야한다.
+
 - SSR방식은 해당 페이지의 데이터가 들어오기 전 까진 아무것도 볼 수 없다가 해당 페이지의 데이터만 들어오면 전체를 다 볼 수 있고(다른 페이지 갈 때도 이 과정이 필요)
+
 - CSR방식은 모든 JS파일들이 들어와야('loading...') 보여지는데 그대신 다른 페이지 갈 때는 이미 모든 JS파일을 받았으니 SSR 방식보다는 빠르게 화면을 볼 수 있다.
-- index.js -> SSR(서버 사이드 랜더링)방식
+
+- index.js -> SSR(서버 사이드 랜더링)방식
+
 - About-us.js -> CSR(클라이언트 사이드 랜더링)방식
+
+<br>
 
 nextjs-intro/src/pages/index.js - SSR 방식
 ```js
@@ -549,7 +559,7 @@ export default function Home({ results }) {
       <Seo title="Home" />
         {results?.map((movie) => (
         <div className="movie" key={movie.id}>
-          <img src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`} />
+          <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} />
           <h4>{movie.original_title}</h4>
         </div>
       ))}
@@ -592,5 +602,62 @@ export async function getServerSideProps() {
 
 <br>
 
-### #2.4 Recap 
+### #2.5 Dynamic Routes
+
+URL에 변수 넣는 방법 !
+
+파일명 대괄호 안에 마음대로 변수명 적기. ex - [potato].js
+
+nextjs-intro/src/pages/movies/[id].js
+
+접근 URL 예시 - http://localhost:3000/movies/123123(id)
+
+```js
+import { useRouter } from "next/router";
+
+export default function Detail() {
+  const router = useRouter();
+  console.log(router);//query: {id : '123123'}
+  return "detail";
+}
+```
+
+<br>
+
+접근 URL 예시 - http://localhost:3000/movies/all
+
+nextjs-intro/src/pages/movies/all.js 파일 생성
+```js
+export default function All(){
+  return "all";
+}
+```
+
+<br>
+
+접근 URL 예시 - http://localhost:3000/movies
+
+상단 movies/all이랑 movies url 모두 사용할 수 있음.
+
+nextjs-intro/src/pages/movies/index.js 파일 생성
+```js
+export default function MovieIndex(){
+  return "MovieIndex";
+}
+```
+
+<br>
+
+접근 URL 예시 - http://localhost:3000/movies
+
+nextjs-intro/src/pages/movies.js 파일 생성
+
+```js
+export default function Movies(){
+  return "Movies";
+}
+```
+
+<br>
+
 
