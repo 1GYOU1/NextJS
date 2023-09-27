@@ -660,4 +660,10 @@ export default function Movies(){
 
 <br>
 
+### #2.6 Movie Detail
+
+```js
+
+```
+
 
