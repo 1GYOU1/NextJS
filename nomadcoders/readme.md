@@ -662,8 +662,120 @@ export default function Movies(){
 
 ### #2.6 Movie Detail
 
-```js
+- 다른 페이지로 navigate할 때, 필요한 정보는 url query로 전달하되 router의 masking으로 사용자에게 노출되지 않도록 만드는게 효과적
+- 홈페이지(index.js)에서 정보를 받아서 넘겨주는 형태라서 유저가 홈페이지에서 클릭을 통해 상세페이지로 이동했을때만 작동. 무조건 홈페이지 -> 상세페이지로 넘어올때에만 존재.
+- 바로 id로 들어가면 loading...만 뜨고 로드 안됌.
+- 크롬 시크릿 창으로 홈페이지를 거치지 않고 상세페이지로 바로 접속해도 로드 안됌.
+- 페이지가 넘어갈 때 모든 소스가 로드되어있어서 로딩이 보이는 빈도를 줄일 수 있음.
 
+#### router.push(url, as, options)
+- 클라이언트 측 전환을 처리
+- url: UrlObject | String: 탐색할 URL
+- as: UrlObject | String: 브라우저 URL 표시줄에 표시될 경로에 대한 선택적 데코레이터
+```js
+router.push({
+  pathname: '/post/[pid]',
+  query: { pid: post.id },
+})
 ```
 
+nextjs-intro/src/pages/index.js
+```js
+import Link from "next/link";
+import { useRouter } from "next/router";
+import Seo from "../components/Seo";
 
+export default function Home({ results }) {
+    const router = useRouter();
+    const onClick = (id, title) => {
+    router.push(
+        {//URL을 설정하고 정보를 얹어주는 부분
+            pathname: `/movies/${id}`,
+            query: {
+                title,
+            },
+        },
+        `/movies/${id}`//브라우저에 보이는 URL 마스킹
+    );
+  };
+  return (
+    <div className="container">
+      <Seo title="Home" />
+        {results?.map((movie) => (
+        <div
+        onClick={() => onClick(movie.id, movie.original_title)}
+        className="movie"
+        key={movie.id}
+        >
+          <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} />
+          <h4>
+            <Link legacyBehavior
+              href={{
+                pathname: `/movies/${movie.id}`,
+                query: {
+                  title: movie.original_title,
+                },
+              }}
+              as={`/movies/${movie.id}`}//[id].js로 연결
+            >
+            {/* <Link href={`/movies/${movie.id}`}> 상단과 동일한 작성 방법 */}
+              <a>{movie.original_title}</a>
+            </Link>
+          </h4>
+        </div>
+      ))}
+      <style jsx>{`
+        .container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          padding: 20px;
+          gap: 20px;
+        }
+        .movie{
+            cursor:pointer;
+        }
+        .movie img {
+          max-width: 100%;
+          border-radius: 12px;
+          transition: transform 0.2s ease-in-out;
+          box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        }
+        .movie:hover img {
+          transform: scale(1.05) translateY(-10px);
+        }
+        .movie h4 {
+          font-size: 18px;
+          text-align: center;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export async function getServerSideProps() {
+    const { results } = await (
+      await fetch(`http://localhost:3000/api/movies`)
+    ).json();
+    return {
+      props: {
+        results,
+      },
+    };
+}
+```
+
+nextjs-intro/src/pages/movies/[id].js
+```js
+import { useRouter } from "next/router";
+
+export default function Detail() {
+  const router = useRouter();
+  console.log(router)//넘겨받은 API 정보 확인
+  return (
+    <div>
+      <h4>{router.query.title || "Loading..."}</h4>
+      {/* html 먼저 렌더링되고 js가 모두 로드되기 전에 Loading 노출 */}
+    </div>
+  );
+}
+```

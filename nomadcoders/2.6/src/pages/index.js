@@ -6,13 +6,13 @@ export default function Home({ results }) {
     const router = useRouter();
     const onClick = (id, title) => {
     router.push(
-        {
+        {//URL을 설정하고 정보를 얹어주는 부분
             pathname: `/movies/${id}`,
             query: {
                 title,
             },
         },
-        `/movies/${id}`
+        `/movies/${id}`//브라우저에 보이는 URL 마스킹
     );
   };
   return (
@@ -33,8 +33,9 @@ export default function Home({ results }) {
                   title: movie.original_title,
                 },
               }}
-              as={`/movies/${movie.id}`}
+              as={`/movies/${movie.id}`}//[id].js로 연결
             >
+              {/* <Link href={`/movies/${movie.id}`}> 상단과 동일한 작성 방법 */}
               <a>{movie.original_title}</a>
             </Link>
           </h4>
