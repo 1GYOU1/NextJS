@@ -668,6 +668,8 @@ export default function Movies(){
 - 크롬 시크릿 창으로 홈페이지를 거치지 않고 상세페이지로 바로 접속해도 로드 안됌.
 - 페이지가 넘어갈 때 모든 소스가 로드되어있어서 로딩이 보이는 빈도를 줄일 수 있음.
 
+<br>
+
 #### router.push(url, as, options)
 - 클라이언트 측 전환을 처리
 - url: UrlObject | String: 탐색할 URL
@@ -678,6 +680,8 @@ router.push({
   query: { pid: post.id },
 })
 ```
+
+<br>
 
 nextjs-intro/src/pages/index.js
 ```js
@@ -725,28 +729,7 @@ export default function Home({ results }) {
         </div>
       ))}
       <style jsx>{`
-        .container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          padding: 20px;
-          gap: 20px;
-        }
-        .movie{
-            cursor:pointer;
-        }
-        .movie img {
-          max-width: 100%;
-          border-radius: 12px;
-          transition: transform 0.2s ease-in-out;
-          box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-        }
-        .movie:hover img {
-          transform: scale(1.05) translateY(-10px);
-        }
-        .movie h4 {
-          font-size: 18px;
-          text-align: center;
-        }
+       ...
       `}</style>
     </div>
   );
@@ -778,4 +761,31 @@ export default function Detail() {
     </div>
   );
 }
+```
+
+nextjs-intro/next.config.js
+```js
+...
+  async rewrites() {
+    return [
+      {
+        source: "/api/movies",
+        destination: `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`,
+      },
+      {//추가한 부분
+        source: "/api/movies/:id",
+        destination: `https://api.themoviedb.org/3/movie/:id?api_key=${API_KEY}`,
+      },
+    ];
+  },
+};
+
+```
+
+<br>
+
+### #2.7 Catch All
+
+```js
+
 ```
