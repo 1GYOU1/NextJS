@@ -786,6 +786,153 @@ nextjs-intro/next.config.js
 
 ### #2.7 Catch All
 
-```js
+- 유저가 홈페이지에서 클릭을 통해 상세페이지로 이동했을때만 작동했었는데, URl Catch All을 하면 페이지 내용을 볼 수 있음.
+- SEO에도 좋음.
 
+<br>
+
+nextjs-intro/src/pages/movies/[...params].js
+
+```js
+import Seo from "../../components/Seo";
+import { useRouter } from "next/router";
+
+export default function Detail({ params }) {
+  const router = useRouter();
+  console.log(router)//예시 - query: {title: 'Retribution', id: '762430'}
+  const [title, id] = params || [];
+  //const [title, id] = router.query.params
+  return (
+    <div>
+      <Seo title={title} />
+      <h4>{title}</h4>
+    </div>
+  );
+}
+
+export function getServerSideProps({ params: { params } }) {
+  return {
+    props: {
+      params,
+    },
+  };
+}
 ```
+상단 코드 설명
+
+**pages 폴더 밑에, movies 폴더 밑에, […params].js 라는 파일을 만드는 순간**
+
+- nextjs 서버는, **{ params: { params: [    ,    ] } }** 객체를 만든다.  (물론 프로그램이 실행되었을 경우)
+
+- 그래서, localhost:3000/movies/#####/****/??   형식의 url 주소로 이동하게 되면 서버에 **{ params: { params: [  ####  , *** , ??   ] } }**   객체가 생성된다.
+
+ - http://localhost:3000/movies/762430/1212/1212/12/1212로 접속하면 
+
+  - console에 query: params: (5) ['762430', '1212', '1212', '12', '1212'] 이런식으로 모두 catch해서 가져옴.
+
+이 객체값을 받아오려면, 두 가지 방식이 있다.
+
+1. **router를 이용하는 방법(router.query.params)**
+```js
+/*
+router를 생성하려면 js스크립트를 통해 라우터를 형성하는 시간이 필요함.
+
+그래서 만약 router를 생성해서, router를 통해 params 값을 받아오려면
+*/
+const [title, id] = router.query.params
+/* 
+처음에는 에러가 난다.
+
+에러가 나는 이유는, router가 없으니, router.query.params 값도 얻을 수 없는데,
+
+const [title, id]=router.query.params; 식으로  title이나 id 변수에, 없는 값을 할당하려 하니 에러가 난다.
+
+그래서 에러를 방지하기 위해 빈 배열을 이용한 것이다.
+ */
+const [title, id] = router.query.params || [];
+/*
+조금 시간이 지나 router가 생성되면, 서버에서 간직하고 있는 params객체 값을 router.query.params를 통해 얻어올 수 있다.
+*/
+```
+2. **getServerSideProps()를 이용하는 방법**
+
+```js
+/*
+이것은 {params: {params} 객체를 서버로부터 받아오고, 지금 페이지(현재의 컴포넌트함수)에게 props로 {params}객체를 리턴하는 것이다.
+*/
+export function getServerSideProps({params: {params} }) {
+  return { props: {params} };
+}
+/*
+이런 식으로 params값을 쏙 빼내서 사용할 수 있게 되고, 리턴은  {params} 를 props로 해서 리턴한다.
+
+그러면 해당 url 주소가 되면 활성화되는 함수인 Detail 함수가, {params} 객체를 인자로 받아들여서,
+
+그 안의 내용을 원하는 변수에 넣어서 사용할 수 있다.
+*/
+```
+
+```js
+export default function Detail( {params} ){
+  const [title, id] = params || [];;
+  return (
+    <div>
+      <h4>{title}</h4>
+    </div>
+  );
+}
+```
+
+<br>
+
+#### **만약 홈페이지를 거쳐서 해당 url로 왔을 경우
+
+최초에 해당 url(상세페이지)로 접속하게 되면,  서버가 생성하는 params내용은 params: [  ‘spider…’,  ‘634…’ ]  형태로  title, id 라는 변수가 없음.
+
+그치만, 홈페이지에서, 라우터를 만들고, 라우터를 통해서 params 내용을 수정할 수 있다.
+
+```js
+export default function Home({ results }) {
+    const router = useRouter();
+    const onClick = (id, title) => {
+    router.push(`/movies/${title}/${id}`);
+  };
+  return (
+  ...
+```
+
+이렇게 하면  params는  params: { title: ‘spider…’, id: ‘634…’}   식으로  객체형태로 바뀌게 됌.
+
+nextjs-intro/src/pages/movies/[...params].js
+```js
+export default function Detail({ params }) {
+  const router = useRouter();
+  console.log(router)//query: {title: 'Retribution', id: '762430'}
+```
+
+이렇게 홈페이지에서 위와 같이 router를 통해 params 모양을 객체로 바꾼 상태에서,
+
+홈페이지에서 다른 url(예를 들어, movies/####/***로 이동하게 되면, 
+
+그 url과 관련된 컴포넌트에서, router나 서버를 통해서, params 를 얻게 되면, 변형된 params를 얻게 되니,
+
+당연히 **id와 title 변수가 들어간 객체 형태의 params**를 얻게 됌.
+
+그래서 **#### 값을 얻으려면, router.query.title**로 얻어야 되고, 값을 얻으려면, **router.query.id** 로 얻어야 됩니다. (객체의 값을 얻는 방식)
+
+이것과 비교해서, 홈페이지를 거치지 않아서 **params가 수정되지 않은 경우** params 는  **[**  ####, ***  **]** **배열 안에  title, id라는 변수 없이 저장**되어 있기 때문에, 그 값을 얻으려면, const **[** title, id **]** = params;  식으로 얻어내야 된다. ← [배열] 사용한 것에 주목해야함.
+
+즉 이런 식으로 title, id값을 가져오는 것. const [title, id ] = [ ####, *** ];
+
+
+### router
+
+1. 라우터는 push를 통해 해당 주소로 이동하게 도와주고,
+2. push를 하면서, 서버에 있는 params객체에 접근해서, 
+    - params 객체 내에 있는 **(프로퍼티인) params**의 파라미터 값을 수정할 수 있고(수정할 경우 객체형태의 params가 됨, 수정전에는 기본적으로 어레이형태이다. ),
+
+3. router.query.params를 통해 params 프로퍼티 값을 가져올 수도 있다.
+
+<br>
+
+[설명 참조](https://imported-sturgeon-51f.notion.site/nextjs-params-router-d7e6c04fdd094adc90418c269af107fd)
