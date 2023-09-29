@@ -918,7 +918,7 @@ export default function Detail({ params }) {
 
 당연히 **id와 title 변수가 들어간 객체 형태의 params**를 얻게 됌.
 
-그래서 **#### 값을 얻으려면, router.query.title**로 얻어야 되고, 값을 얻으려면, **router.query.id** 로 얻어야 됩니다. (객체의 값을 얻는 방식)
+그래서 **#### 값을 얻으려면, router.query.title**로 얻어야 되고, ***값을 얻으려면, **router.query.id** 로 얻어야 됩니다. (객체의 값을 얻는 방식)
 
 이것과 비교해서, 홈페이지를 거치지 않아서 **params가 수정되지 않은 경우** params 는  **[**  ####, ***  **]** **배열 안에  title, id라는 변수 없이 저장**되어 있기 때문에, 그 값을 얻으려면, const **[** title, id **]** = params;  식으로 얻어내야 된다. ← [배열] 사용한 것에 주목해야함.
 
