@@ -1,6 +1,6 @@
 ## NextJS 시작하기
 
-<!--2023-09-15 ~ -->
+2023-09-15 ~ 2023-09-30
 
 #### 배우는 이론
 - Tour of Next
@@ -936,3 +936,24 @@ export default function Detail({ params }) {
 <br>
 
 [설명 참조](https://imported-sturgeon-51f.notion.site/nextjs-params-router-d7e6c04fdd094adc90418c269af107fd)
+
+<br>
+
+### #2.8 404 Pages
+
+- /src/pages/404.js 해당 위치에 404.js 파일을 만들면 404페이지 커스텀을 할 수 있음.
+- 예시 - http://localhost:3000/12313asdasdas 임의로 아무 페이지 접속시 커스텀 404페이지가 나타남.
+
+```js
+export default function NotFound() {
+    return "what are u doing here?";
+}
+```
+
+<img width="768" alt="스크린샷 2023-09-30 오후 10 35 50" src="https://github.com/1GYOU1/NextJS/assets/90018379/ef267db6-13ce-4ce4-af74-eaa977bb714f">
+
+<br>
+
+### 완성된 페이지
+
+![ezgif com-gif-maker](https://github.com/1GYOU1/NextJS/assets/90018379/73b1e9ef-a6f7-4f91-995f-4de9608a3d75)
