@@ -957,3 +957,166 @@ export default function NotFound() {
 ### 완성된 페이지
 
 ![ezgif com-gif-maker](https://github.com/1GYOU1/NextJS/assets/90018379/73b1e9ef-a6f7-4f91-995f-4de9608a3d75)
+
+<br>
+
+### Next.js gh-pages 배포하기
+
+https://1gyou1.github.io/NextJs-intro/
+
+### package.json 수정
+
+- homepage 에 url 추가 http://1GYOU1.github.io/ + [나의 레포지토리 주소] => homepage(http://[사용자아이디].github.io/[Repositories이름]) 추가
+- build script 에 next export 를 추가
+- script 에 deploy 라는 명령어를 만들어 배포까지 한번에 가능한 명령어를 추가
+- 깃허브 배포 브랜치명은 무조건 'gh-pages'여야 함 !
+
+명령어 설명
+- touch out/.nojekyll : Github page의 jekyll 처리과정에서 _next 이러한 파일을 특수 리소스로 간주하고 최종 사이트에 복사하지 않는데 .nojekyll 파일을 만들면 이를 막을 수 있다.
+- git add -f out/ : git add, out폴더가 gitignore에 포함되어 있어서 강제로 add
+- git commit -m : 'deploy to gh-pages'라는 커밋 메세지를 작성
+- git subtree push —prefix out origin gh-pages : github 저장소 gh-pages브랜치에 push
+
+nextjs-intro/package.json
+```js
+{
+  "name": "nextjs-intro",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && next export",// export 추가
+    "start": "next start",
+    "lint": "next lint",
+    "predeploy": "npm run build",
+    // deploy 추가
+    "deploy": "touch out/.nojekyll && gh-pages -d out --dotfiles"
+  },
+  "dependencies": {
+    "autoprefixer": "10.4.15",
+    "eslint": "8.49.0",
+    "eslint-config-next": "13.4.19",
+    "next": "13.4.19",
+    "postcss": "8.4.29",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.3.3"
+  },
+  "homepage": "https://1gyou1.github.io/NextJs-intro",// homepage 추가
+  "devDependencies": {
+    "gh-pages": "^6.0.0"
+  }
+}
+```
+
+Next.js로 만든 프로젝트를 깃허브에 배포하면 css랑 img가 적용이 안돼서 나오는데, 약간의 세팅이 필요
+
+### next.config.js 수정
+
+repository는 package.json의 homepage에 있는 url을 넣어주면 된다.
+
+nextjs-intro/next.config.js
+```js
+/** @type {import('next').NextConfig} */
+const debug = process.env.NODE_ENV !== "production";
+const repository = "NextJs-intro";
+
+const nextConfig = {
+  reactStrictMode: true,
+  assetPrefix: !debug ? `/${repository}/` : "", // production 일때 prefix 경로
+  trailingSlash: true, // 빌드 시 폴더 구조 그대로 생성하도록
+};
+
+// module.exports = nextConfig;
+```
+
+### config/config 추가
+
+prefix를 추가
+
+nextjs-intro/src/config
+```js
+export const prefix =
+  process.env.NODE_ENV === "production"
+    ? "https://1GYOU1.github.io/NextJs-intro"
+    : "";
+```
+
+### context/context.js
+
+context api(recoil같이 전역관리)를 이용하여 config.js에서 preix를 가져와 추가해 주어야 한다.
+
+🙋🏻‍♂️ context api가 싫다면, 최상위 컴포넌트에서 props로 prefix를 보내도 상관없음!!
+```js
+import React from "react";
+
+const PortfolioContext = React.createContext();
+
+export const PortfolioProvider = PortfolioContext.Provider;
+export const PortfolioConsumer = PortfolioContext.Consumer;
+
+export default PortfolioContext;
+```
+
+### app.js 최상위 컴포넌트를 provider로 감싸기
+
+nextjs-intro/src/pages/_app.js
+
+```js
+import Layout from "../components/Layout";
+import "../styles/globals.css";
+
+import { PortfolioProvider } from "../components/commons/context/context";
+import { prefix } from "../config/config";
+
+export default function MyApp({ Component, pageProps }) {
+  return (
+    <>
+    <PortfolioProvider value={{ prefix }}>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </PortfolioProvider>
+    </>
+  );
+}
+```
+
+### img 사용 예제
+프로젝트를 완성하고 배포하려고 한다면, img의 src부분을 수정해 주지 않는다면, 깃허브 배포시 제대로 나오지 않는다. prefix를 붙여서 사용을 하면된다.
+
+#### url 예제
+
+```js
+<Box1
+  style={{
+    backgroundImage: `url(${prefix}/images/rending/rending1.jpg)`,
+  }}
+>
+```
+
+#### src 예제
+
+이미지가 아닌 file도 똑같이 하면 정상 출력된다.
+
+```js
+<img src={`${prefix}/vercel.svg`} />
+```
+
+그 후 마지막으로 명령어 실행으로 gh-pages에 배포
+>$ npm run deploy
+
+<br>
+
+** 오류
+
+gh-pages는 라우팅 문제 때문에 index가 아닌 곳에서 새로고침하거나 랜딩되면 404 페이지로 뜨는 오류 ㅠ (로컬에서는 정상적으로 보임,,)
+<span style=text-decoration:line-through>그치만 api로 파라미터값 넘겨받는 url 보이는 거에 만족,,,ㅠ</span>
+
+gh-pages는 정적페이지라서 getServerSideProps 사용하면 에러가 남,, 그래서 getStaticProps로 바꿔줌,, 
+
+global css를 적용해놨는데, 왜 때문인지 안먹음.. 임시방편으로 다른 방법으로 스타일 적용해놨으나 추후 보완해야할듯
+
+<br>
+
+[참고사이트](https://velog.io/@aimzero9303/Next.js-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-GitHubPages-%EB%A1%9C-%EB%B0%B0%ED%8F%AC%ED%95%98%EA%B8%B0)
